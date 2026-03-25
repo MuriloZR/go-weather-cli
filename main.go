@@ -20,17 +20,21 @@ type CurrentCondition struct {
 	WeatherDesc []WeatherDesc `json:"weatherDesc"`
 }
 
-type Response struct {
-	CurrentCondition []CurrentCondition `json:"current_condition"`
+type AreaName struct {
+	Value string `json:"value"`
 }
 
-func main() {
-	if len(os.Args) == 1 {
-		fmt.Printf("Você deve especificar qual cidade quer buscar o clima\n")
-		os.Exit(1)
-	}
+type NearestArea struct {
+	AreaName []AreaName `json:"areaName"`
+}
 
-	url := fmt.Sprintf("https://wttr.in/%s?format=j1", os.Args[1])
+type Response struct {
+	CurrentCondition []CurrentCondition `json:"current_condition"`
+	NearestArea []NearestArea `json:"nearest_area"`
+}
+
+func fetchWeather(s string) Response{
+	url := fmt.Sprintf("https://wttr.in/%s?format=j1", s)
 
 	resp, err := http.Get(url)
 	if err != nil {
@@ -46,12 +50,30 @@ func main() {
 	}
 
 	var response Response
-	json.Unmarshal(info, &response)
+	err = json.Unmarshal(info, &response)
+	if err != nil {
+		fmt.Printf("Erro na decodificação do JSON\n")
+		os.Exit(1)
+	}
 
-	fmt.Printf("Tempo em %s:\n", os.Args[1])
+	return response
+}
+
+func printWeather(response Response) {
+	fmt.Printf("Tempo em %s:\n", response.NearestArea[0].AreaName[0].Value)
 	fmt.Printf("Última Atualização em: %s\n", response.CurrentCondition[0].ObsTime)
 	fmt.Printf("%s\n", response.CurrentCondition[0].WeatherDesc[0].Value)
 	fmt.Printf("Temperatura: %s °C\n", response.CurrentCondition[0].TempC)
 	fmt.Printf("Sensação Térmica: %s °C\n", response.CurrentCondition[0].FeelC)
 	fmt.Printf("Umidade: %s%%\n", response.CurrentCondition[0].Humity)
+}
+
+func main() {
+	if len(os.Args) == 1 {
+		fmt.Printf("Você deve especificar qual cidade quer buscar o clima\n")
+		os.Exit(1)
+	}
+
+	response := fetchWeather(os.Args[1])
+	printWeather(response)
 }

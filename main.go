@@ -8,8 +8,16 @@ import (
 	"encoding/json"
 )
 
+type WeatherDesc struct {
+	Value string `json:"value"`
+}
+
 type CurrentCondition struct {
 	TempC string `json:"temp_C"`
+	FeelC string `json:"FeelsLikeC"`
+	Humity string `json:"humidity"`
+	ObsTime string `json:"localObsDateTime"`
+	WeatherDesc []WeatherDesc `json:"weatherDesc"`
 }
 
 type Response struct {
@@ -40,5 +48,10 @@ func main() {
 	var response Response
 	json.Unmarshal(info, &response)
 
+	fmt.Printf("Tempo em %s:\n", os.Args[1])
+	fmt.Printf("Última Atualização em: %s\n", response.CurrentCondition[0].ObsTime)
+	fmt.Printf("%s\n", response.CurrentCondition[0].WeatherDesc[0].Value)
 	fmt.Printf("Temperatura: %s °C\n", response.CurrentCondition[0].TempC)
+	fmt.Printf("Sensação Térmica: %s °C\n", response.CurrentCondition[0].FeelC)
+	fmt.Printf("Umidade: %s%%\n", response.CurrentCondition[0].Humity)
 }

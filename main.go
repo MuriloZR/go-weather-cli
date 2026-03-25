@@ -8,29 +8,39 @@ import (
 	"encoding/json"
 )
 
-type WeatherDesc struct {
-	Value string `json:"value"`
+type Response struct {
+	CurrentCondition []CurrentCondition `json:"current_condition"`
+	NearestArea 	 []NearestArea `json:"nearest_area"`
+	Weather 		 []Weather `json:"weather"`
 }
 
 type CurrentCondition struct {
-	TempC string `json:"temp_C"`
-	FeelC string `json:"FeelsLikeC"`
-	Humity string `json:"humidity"`
+	TempC   string `json:"temp_C"`
+	FeelC   string `json:"FeelsLikeC"`
+	Humity  string `json:"humidity"`
 	ObsTime string `json:"localObsDateTime"`
-	WeatherDesc []WeatherDesc `json:"weatherDesc"`
-}
-
-type AreaName struct {
-	Value string `json:"value"`
+	WeatherDesc []ValueObject `json:"weatherDesc"`
 }
 
 type NearestArea struct {
-	AreaName []AreaName `json:"areaName"`
+	AreaName []ValueObject `json:"areaName"`
+	Country  []ValueObject `json:"country"`
+	Region   []ValueObject `json:"region"`
 }
 
-type Response struct {
-	CurrentCondition []CurrentCondition `json:"current_condition"`
-	NearestArea []NearestArea `json:"nearest_area"`
+type Weather struct {
+	Date string `json:"date"`
+	MaxTempC string `json:"maxtempC"`
+	MinTempC string `json:"mintempC"`
+	Hourly []Hourly `json:"hourly"`
+}
+
+type Hourly struct {
+	ChanceRain string `json:"chanceofrain"`
+}
+
+type ValueObject struct {
+	Value string `json:"value"`
 }
 
 func fetchWeather(s string) Response{
@@ -60,12 +70,26 @@ func fetchWeather(s string) Response{
 }
 
 func printWeather(response Response) {
-	fmt.Printf("Tempo em %s:\n", response.NearestArea[0].AreaName[0].Value)
-	fmt.Printf("Última Atualização em: %s\n", response.CurrentCondition[0].ObsTime)
-	fmt.Printf("%s\n", response.CurrentCondition[0].WeatherDesc[0].Value)
-	fmt.Printf("Temperatura: %s °C\n", response.CurrentCondition[0].TempC)
-	fmt.Printf("Sensação Térmica: %s °C\n", response.CurrentCondition[0].FeelC)
-	fmt.Printf("Umidade: %s%%\n", response.CurrentCondition[0].Humity)
+	current := response.CurrentCondition[0]
+	area := response.NearestArea[0]
+	weather := response.Weather[0]
+
+	city := area.AreaName[0].Value
+	// region := area.Region[0].Value
+	country := area.Country[0].Value
+	desc := current.WeatherDesc[0].Value
+
+	fmt.Println()
+	fmt.Println("╔═════════════════════════════════════════╗")
+	fmt.Printf("║  %s, %s\n", city, country)
+	fmt.Println("╠═════════════════════════════════════════╣")
+	fmt.Printf("║  %s\n", desc)
+	fmt.Printf("║  Temperatura:\n")
+	fmt.Printf("║    Atual: %s°C Máxima: %s°C Mínima: %s°C\n", current.TempC, weather.MaxTempC, weather.MinTempC)
+	fmt.Printf("║  Sensação:      %s°C\n", current.FeelC)
+	fmt.Printf("║  Umidade:       %s%%\n", current.Humity)
+	// fmt.Println("╠═════════════════════════════════════════╣")
+	fmt.Println("╚═════════════════════════════════════════╝")
 }
 
 func main() {

@@ -76,4 +76,4 @@ Em algum momento eu vou deixar assim
 
 ## 📄 Licença
 
-MIT
+[MIT](./LICENSE)
